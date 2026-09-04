@@ -1,20 +1,17 @@
-"""Compatibility entry point for Streamlit Cloud.
+"""Streamlit Cloud entry point for the retail dashboard.
 
-The dashboard implementation lives in ``app.py``. Streamlit Cloud currently
-launches this filename, so importing ``app`` delegates execution to the single
-dashboard application without duplicating its code.
+The dashboard implementation lives in ``app.py``. Execute that file by its
+resolved path so deployment cannot accidentally import an unrelated module
+named ``app``.
 """
 
-import streamlit as st
+from pathlib import Path
+import runpy
 
-try:
-    import app
-except ImportError as error:
-    st.error("The dashboard could not start because a required Python package is missing.")
-    st.exception(error)
-except (FileNotFoundError, ValueError) as error:
-    st.error("The dashboard could not start because its data file is unavailable or invalid.")
-    st.exception(error)
-except Exception as error:
-    st.error("The dashboard failed during startup.")
-    st.exception(error)
+
+DASHBOARD_PATH = Path(__file__).resolve().with_name("app.py")
+
+if not DASHBOARD_PATH.is_file():
+    raise FileNotFoundError(f"Dashboard entrypoint not found: {DASHBOARD_PATH}")
+
+runpy.run_path(str(DASHBOARD_PATH), run_name="__main__")
